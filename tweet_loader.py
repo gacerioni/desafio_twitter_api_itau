@@ -20,7 +20,7 @@ A_TOKEN_SECRET = config['TWITTER_CREDENTIALS']['A_TOKEN_SECRET']
 #MONGODB_PARAMS
 MONGO_SERVER = config['MONGODB_PARAMS']['MONGO_SERVER']
 MONGO_DB = config['MONGODB_PARAMS']['MONGO_DB']
-MONGO_COL = config['MONGODB_PARAMS']['MONGO_COL']
+MONGO_TWEETS_COL = config['MONGODB_PARAMS']['MONGO_TWEETS_COL']
 MONGO_USER = config['MONGODB_PARAMS']['MONGO_USER']
 MONGO_PWD = config['MONGODB_PARAMS']['MONGO_PWD']
 
@@ -73,7 +73,7 @@ def main():
     minimal_tweet_list = get_all_tweets(api_auth, HASHTAGS, TWEET_LIMITS)
 
     # 3-) Indexing all those tweets!
-    result = insert_many_tweets(minimal_tweet_list, MONGO_SERVER, MONGO_DB, MONGO_COL, MONGO_USER, MONGO_PWD)
+    result = insert_many_tweets(minimal_tweet_list, MONGO_SERVER, MONGO_DB, MONGO_TWEETS_COL, MONGO_USER, MONGO_PWD)
 
     print(result)
 
