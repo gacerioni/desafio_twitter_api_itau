@@ -2,6 +2,10 @@ import pymongo
 import tweepy
 import configparser
 from operator import itemgetter
+import logging
+
+# Logging config
+logging.basicConfig(format='%(asctime)s --- %(levelname)s --- %(message)s', level=logging.INFO)
 
 
 #LOAD PARAMS FROM CONFIG FILE
@@ -90,25 +94,40 @@ def create_rank_by_followers(user_filtered_list, topn):
 
 def main():
 
-    # 1-) Get a dedupped list with all users that tweeted somehing.
+    # 1-) Get a dedupped list with all users that tweeted something.
+    logging.info("Getting a dedupped user list from the tweets Collection...")
     users = get_tweeted_user_ids(MONGO_SERVER, MONGO_DB, MONGO_TWEETS_COL, MONGO_USER, MONGO_PWD)
+    logging.info("Done!")
 
     # 2-) A very simple way to auth with my twitter credentials
+    logging.info("Connecting to MongoDB...")
     api_auth = local_twitter_api_auth(C_KEY, C_SECRET, A_TOKEN, A_TOKEN_SECRET)
+    logging.info("Connected!")
 
     # 3-) Get a ready to go user list from tweeter with the info we need
+    logging.info("Creating a list with information regarding the user tweeting the desired hashtags")
     filtered_user_list = get_filtered_user_list(api_auth, users)
+    logging.info("Done!")
 
     # 4-) Get the top 5 users considering the followers
+    logging.info("Creating the TOP N RANK...")
     top_rank = create_rank_by_followers(filtered_user_list, 5)
+    logging.info("Done!")
 
     # 5-) Clean the last Ranking
-    print(delete_old_rank(MONGO_SERVER, MONGO_DB, MONGO_RANK_COL, MONGO_USER, MONGO_PWD))
+    logging.info("Cleaning old Rankings...")
+    result = delete_old_rank(MONGO_SERVER, MONGO_DB, MONGO_RANK_COL, MONGO_USER, MONGO_PWD)
+    logging.info("Done! {0}".format(result))
 
     # 6-) Finally, add the rank in the Collection!
+    logging.info("Adding the Rank to the Collection!")
     insert_user_rank(top_rank, MONGO_SERVER, MONGO_DB, MONGO_RANK_COL, MONGO_USER, MONGO_PWD)
+    logging.info("Done!")
 
 
 if __name__ == "__main__":
+    logging.info("Starting Rank Creator by Gabs!")
     main()
+    logging.info("Rank Creator has finished!")
+
 

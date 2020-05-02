@@ -1,7 +1,10 @@
 import pymongo
 import tweepy
 import configparser
+import logging
 
+# Logging config
+logging.basicConfig(format='%(asctime)s --- %(levelname)s --- %(message)s', level=logging.INFO)
 
 #LOAD PARAMS FROM CONFIG FILE
 config = configparser.ConfigParser()
@@ -65,18 +68,40 @@ def insert_many_tweets(tweet_list, mongo_server, mongo_db, mongo_col, mongo_user
     return (x.inserted_ids)
 
 
+def delete_col_data(mongo_server, mongo_db, mongo_col, mongo_user, mongo_pwd):
+    myclient = pymongo.MongoClient(mongo_server, username=mongo_user, password=mongo_pwd)
+    mydb = myclient[mongo_db]
+    mycol = mydb[mongo_col]
+
+    x = mycol.delete_many({})
+
+    return(x.deleted_count, " documents deleted.")
+
+
 def main():
+
+    # 0-) Deleting old tweets from Collection
+    logging.info("Cleaning old tweets from Collection...")
+    result = delete_col_data(MONGO_SERVER, MONGO_DB, MONGO_TWEETS_COL, MONGO_USER, MONGO_PWD)
+    logging.info("Done! {0}".format(result))
+
     # 1-) A very simple way to auth with my twitter credentials
+    logging.info("Connecting to MongoDB...")
     api_auth = local_twitter_api_auth(C_KEY, C_SECRET, A_TOKEN, A_TOKEN_SECRET)
+    logging.info("Connected!")
 
     # 2-) Loading all formatted tweets, based on our desired hashtags
+    logging.info("Loading all requested tweets...")
     minimal_tweet_list = get_all_tweets(api_auth, HASHTAGS, TWEET_LIMITS)
+    logging.info("Done!")
 
     # 3-) Indexing all those tweets!
+    logging.info("Storing all tweets on Database!")
     result = insert_many_tweets(minimal_tweet_list, MONGO_SERVER, MONGO_DB, MONGO_TWEETS_COL, MONGO_USER, MONGO_PWD)
-
-    print(result)
+    logging.info("Done!")
 
 
 if __name__ == "__main__":
+    logging.info("Starting Tweet Loader by Gabs!")
     main()
+    logging.info("Tweet Loader has finished!")
