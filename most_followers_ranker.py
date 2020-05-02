@@ -47,6 +47,26 @@ def get_tweeted_user_ids(mongo_server, mongo_db, mongo_col, mongo_user, mongo_pw
     return(dedup_list)
 
 
+def delete_old_rank(mongo_server, mongo_db, mongo_col, mongo_user, mongo_pwd):
+    myclient = pymongo.MongoClient(mongo_server, username=mongo_user, password=mongo_pwd)
+    mydb = myclient[mongo_db]
+    mycol = mydb[mongo_col]
+
+    x = mycol.delete_many({})
+
+    return(x.deleted_count, " documents deleted.")
+
+
+def insert_user_rank(top_user_rank, mongo_server, mongo_db, mongo_col, mongo_user, mongo_pwd):
+    myclient = pymongo.MongoClient(mongo_server, username=mongo_user, password=mongo_pwd)
+    mydb = myclient[mongo_db]
+    mycol = mydb[mongo_col]
+
+    x = mycol.insert_many(top_user_rank)
+
+    return (x.inserted_ids)
+
+
 def get_user_info(api, user_identification):
     user_raw = api.get_user(user_id=user_identification)
     user_raw_json = user_raw._json
@@ -61,10 +81,12 @@ def get_filtered_user_list(api, user_id_list):
         filtered_user_list.append(filtered_user)
     return(filtered_user_list)
 
+
 def create_rank_by_followers(user_filtered_list, topn):
     sorted_list = sorted(user_filtered_list, key=itemgetter('followers_count'), reverse=True)
     top_list = sorted_list[:topn]
     return(top_list)
+
 
 def main():
 
@@ -78,7 +100,13 @@ def main():
     filtered_user_list = get_filtered_user_list(api_auth, users)
 
     # 4-) Get the top 5 users considering the followers
-    print(len(create_rank_by_followers(filtered_user_list, 5)))
+    top_rank = create_rank_by_followers(filtered_user_list, 5)
+
+    # 5-) Clean the last Ranking
+    print(delete_old_rank(MONGO_SERVER, MONGO_DB, MONGO_RANK_COL, MONGO_USER, MONGO_PWD))
+
+    # 6-) Finally, add the rank in the Collection!
+    insert_user_rank(top_rank, MONGO_SERVER, MONGO_DB, MONGO_RANK_COL, MONGO_USER, MONGO_PWD)
 
 
 if __name__ == "__main__":
