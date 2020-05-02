@@ -36,13 +36,8 @@ def local_twitter_api_auth(consumer_key, consumer_secret, access_token, access_t
 
 def get_recent_tweets_by_hashtag(api, hashtag, limits):
     raw_tweets = [raw._json for raw in tweepy.Cursor(api.search, q=hashtag, result_type="recent").items(limits)]
-    # se precisar de json as string
+    # se precisar de json como string
     # json_as_str = [json.dumps(json_obj) for json_obj in raw_tweets]
-    '''
-    minimal_tweet_list = [{'created_at': raw_tw['created_at'],'hashtag' : hashtag,\
-         'user': raw_tw['user']['id'], 'lang' : raw_tw['lang'], 'text' : raw_tw['text'].encode('UTF-8') }\
-             for raw_tw in raw_tweets]
-    '''
     minimal_tweet_list = [{'created_at': raw_tw['created_at'], 'hashtag': hashtag, \
                            'user': raw_tw['user']['id'], 'lang': raw_tw['lang']} \
                           for raw_tw in raw_tweets]
@@ -54,7 +49,6 @@ def get_all_tweets(api, hashtags_list, limits):
     all_minimal_tweets = []
 
     for hashtag in hashtags_list:
-        print("Hashtag da vez: {0}".format(hashtag))
         minimal_list = get_recent_tweets_by_hashtag(api, hashtag, limits)
         all_minimal_tweets.extend(minimal_list)
 
