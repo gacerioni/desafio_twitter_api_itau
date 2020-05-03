@@ -23,8 +23,8 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: sre_gabs
 
-  tweet-loader:
-    image: tweet-loader
+  tweet-loader-ranker:
+    image: tweet-loader-ranker
     depends_on:
       - mongo
       - mongo-express
